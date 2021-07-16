@@ -26,7 +26,7 @@ and then validates the content of one file selected from the repo.
   // repoName='hbo_uhb' // OT books only
   // repoName='el-x-koine_ugnt' // NT books only
   // repoName='en_ult' // Can use ult or ust here
-  repoName='en_tn' // Can use ta, tw, tn, tq, sn, or sq here
+  repoName='en_ugl' // Can use ta, tw, tn, tq, sn, sq, uhal, or ugl here
 
   // If we don’t put the branch or release version here, the default branch is used
   // branchOrRelease='master'
@@ -53,13 +53,15 @@ and then validates the content of one file selected from the repo.
   // filename= 'en_tn_41-MAT.tsv' // for TSV9 TN
   // filename= 'en_tn_43-LUK.tsv' // for TSV9 TN
   // filename= 'en_tn_50-EPH.tsv' // for TSV9 TN
-  filename= 'en_tn_57-TIT.tsv' // for TSV9 TN
+ // filename= 'en_tn_57-TIT.tsv' // for TSV9 TN
   // filename= 'en_tn_58-PHM.tsv' // for TSV9 TN
   // filename= 'en_tn_61-1PE.tsv' // for TSV9 TN
   // filename= 'en_tn_65-3JN.tsv' // for TSV9 TN
   // filename= 'en_tn_67-REV.tsv' // for TSV9 TN
   // It's actually possible to put a filepath in the filename field
   // filename= 'bible/names/zilpah.md' // for TW
+   filename= 'content/H0612.md' // for UHAL
+   filename= 'content/G14650/01.md' // for UGL
 
   // The location field appears in check messages to help the user locate the issue
   location="as specified in FileCheck demo"
@@ -83,6 +85,6 @@ and then validates the content of one file selected from the repo.
 
   // Specifying maximumSimilarMessages is just to show off options
   // —those fields are not necessary (or normal) here
-  maximumSimilarMessages='0' // Default is 3 (0 means don’t suppress any)
+  //maximumSimilarMessages='0' // Default is 3 (0 means don’t suppress any)
   />
 ```

@@ -35,7 +35,7 @@ import BookPackageCheck from './BookPackageCheck';
   bookID='JAS'
 
   // We can choose the forthcoming new TSV formats or the existing formats
-  // dataSet='BOTH' // 'OLD' (Markdown TQ, TSV9 TN, etc.), 'NEW' (TSV7 TQ2, TSV7 TN2, TSV6 TWL,etc.), 'DEFAULT', or 'BOTH'
+  // dataSet='BOTH' // 'OLD' (Markdown TQ, TSV9 TN, etc.), 'NEW' (TSV7 TQ2, TSV7 TN2, etc.), 'DEFAULT', or 'BOTH'
 
   // Default displayType is 'ErrorsWarnings'
   //  Alternatives are `SevereMediumLow', 'SingleList'
@@ -53,7 +53,7 @@ import BookPackageCheck from './BookPackageCheck';
   // —those fields are not necessary (or normal) here
   excerptLength='25' // Default is 20 characters
   // cutoffPriorityLevel='200' // Default is to detect all errors/warnings
-  maximumSimilarMessages='5' // Default is 3 (0 means don’t suppress any)
+  //maximumSimilarMessages='5' // Default is 3 (0 means don’t suppress any)
   // ignorePriorityNumberList='[]'
   // sortBy='ByRepo' // Default is 'ByPriority'; also have 'ByRepo' and 'AsFound'
   showDisabledNoticesFlag='false' // Display known specific non-issues: 'true' or 'false'

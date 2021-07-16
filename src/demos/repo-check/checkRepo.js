@@ -155,18 +155,19 @@ export async function checkRepo(username, repoName, repoBranch, givenLocation, s
       if (cfcNoticeEntry.extra)
         checkRepoResult.noticeList.push(cfcNoticeEntry); // Add this notice directly
       else {
-        // const newNoticeObject = { ...cfcNoticeEntry, bookID: cfBookID };
-        // if (!repoName.endsWith('_ta') && !repoName.endsWith('_tw') && bookOrFileCode !== '01')
-        //   newNoticeObject.extra = bookOrFileCode;
-        // addNoticePartial(newNoticeObject);
-        addNoticePartial({ ...cfcNoticeEntry, bookID: cfBookID, extra: bookOrFileCode.toUpperCase() });
+        // addNoticePartial({ ...cfcNoticeEntry, bookID: cfBookID, extra: bookOrFileCode.toUpperCase() });
+        const newNoticeObject = { ...cfcNoticeEntry, bookID: cfBookID };
+        if (bookOrFileCode !== '01' // UGL (from content/G04230/01.md)
+        && (bookOrFileCode[0]!=='H' || bookOrFileCode.length!==5)) // UHAL, e.g., H0612 from content/H0612.md
+          newNoticeObject.extra = bookOrFileCode.toUpperCase();
+        addNoticePartial(newNoticeObject);
       }
     /* Removing the following code as it’s unneeded
     //  as we don’t enable TA or TW checking per repo anyway
     // Anyway, not sure that the following code was working yet
     if (repoName.endsWith('_tn')) {
       // The following is needed coz we might be checking the linked TA and/or TW articles from TN2 TSV files
-      userLog("cfcResultObject", JSON.stringify({ ...cfcResultObject, noticeList: "deleted" }));
+      userLog(`cfcResultObject JSON.stringify({ ...cfcResultObject, noticeList: "deleted" })`);
       if (cfcResultObject.checkedFileCount && cfcResultObject.checkedFileCount > 0) {
         checkRepoResult.checkedFileCount += cfcResultObject.checkedFileCount;
         addSuccessMessage(`Checked ${cfcResultObject.checkedFileCount} linked TA/TW articles`);
@@ -226,7 +227,11 @@ export async function checkRepo(username, repoName, repoBranch, givenLocation, s
       const countString = `${pathList.length.toLocaleString()} file${pathList.length === 1 ? '' : 's'}`;
       let checkedFileCount = 0, checkedFilenames = [], checkedFilenameExtensions = new Set(), totalCheckedSize = 0;
       for (const thisFilepath of pathList) {
-        // debugLog(`At top of loop: thisFilepath='${thisFilepath}'`);
+        // debugLog(`checkRepo: at top of loop: thisFilepath='${thisFilepath}'`);
+        // if (repoCode === 'UHAL' || repoCode === 'UGL') { // temp .........................XXXXXXXXXXXXXXXXXXX
+        //   if (thisFilepath.startsWith('LXX_Mapping/')) continue; // skip
+        //   if (checkedFileCount > 100) break;
+        // }
         if (abortFlag) break;
 
         // Update our "waiting" message

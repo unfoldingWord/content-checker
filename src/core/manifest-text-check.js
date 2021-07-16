@@ -588,7 +588,8 @@ export async function checkManifestText(languageCode, repoCode, username, repoNa
     //parameterAssert(typeof username === 'string', `checkManifestText: 'username' parameter should be a string not a '${typeof username}': ${username}`);
     //parameterAssert(repoName !== undefined, "checkManifestText: 'repoName' parameter should be defined");
     //parameterAssert(typeof repoName === 'string', `checkManifestText: 'repoName' parameter should be a string not a '${typeof repoName}': ${repoName}`);
-    if (repoCode !== 'UHB' && repoCode !== 'UGNT') { parameterAssert(repoName.startsWith(languageCode), `checkManifestText: 'repoName' parameter '${repoName}' should start with language code: '${languageCode}_'`); }
+    if (repoCode !== 'UHB' && repoCode !== 'UGNT') { //parameterAssert(repoName.startsWith(languageCode), `checkManifestText: 'repoName' parameter '${repoName}' should start with language code: '${languageCode}_'`);
+    }
     //parameterAssert(repoBranch !== undefined, "checkManifestText: 'repoBranch' parameter should be defined");
     //parameterAssert(typeof repoBranch === 'string', `checkManifestText: 'repoBranch' parameter should be a string not a '${typeof repoBranch}': ${repoBranch}`);
     //parameterAssert(manifestText !== undefined, "checkManifestText: 'manifestText' parameter should be defined");
@@ -788,7 +789,7 @@ export async function checkManifestText(languageCode, repoCode, username, repoNa
                 // debugLog(`  Checking ${adjRepoFilepath} from repoFileList`);
                 if (ourProjectPathList.indexOf(repoFilepath) === -1 && ourProjectPathList.indexOf(adjRepoFilepath) === -1) {
                     // debugLog(`    Seems we couldn't find ${repoFilepath} in the manifest`);
-                    addNotice({ priority: 832, message: `Seems project file is missing from the manifest`, excerpt: repoFilepath, location: ourLocation });
+                    addNotice({ priority: 832, message: `Seems filename is missing from the manifest project list`, excerpt: repoFilepath, location: ourLocation });
                 }
             }
 

@@ -4,7 +4,7 @@ import * as books from '../../core/books/books';
 import { clearCaches, clearCheckedArticleCache, ourParseInt, preloadReposIfNecessary } from '../../core';
 import { checkBookPackages } from './checkBookPackages';
 import { processNoticesToErrorsWarnings, processNoticesToSevereMediumLow, processNoticesToSingleList } from '../notice-processing-functions';
-import { RenderSuccesses, RenderSuccessesErrorsWarnings, RenderSuccessesSevereMediumLow, RenderSuccessesWarningsGradient, RenderTotals } from '../RenderProcessedResults';
+import { RenderCheckedFilesList, RenderSuccessesErrorsWarnings, RenderSuccessesSevereMediumLow, RenderSuccessesNoticesGradient, RenderTotals } from '../RenderProcessedResults';
 // eslint-disable-next-line no-unused-vars
 import { userLog, debugLog, logicAssert } from '../../core/utilities';
 
@@ -156,7 +156,7 @@ function BookPackagesCheck(/*username, languageCode, bookIDs,*/ props) {
       function renderSummary(processedResults) {
         return (<div>
           <p>Checked <b>{username} {languageCode} {bookIDList.join(', ')}</b> (from <i>{branch === undefined ? 'DEFAULT' : branch}</i> branches)</p>
-          <RenderSuccesses username={username} results={processedResults} />
+          <RenderCheckedFilesList username={username} results={processedResults} />
           <RenderTotals rawNoticeListLength={rawCBPsResults.noticeList.length} results={processedResults} />
           {/* <RenderRawResults results={rawCBPsResults} /> */}
         </div>);
@@ -165,7 +165,7 @@ function BookPackagesCheck(/*username, languageCode, bookIDs,*/ props) {
       if (displayType === 'ErrorsWarnings') {
         const processedResults = processNoticesToErrorsWarnings(rawCBPsResults, processOptions);
         //       userLog(`BookPackagesCheck got back processedResults with ${processedResults.successList.length.toLocaleString()} success message(s), ${processedResults.errorList.length.toLocaleString()} error(s) and ${processedResults.warningList.length.toLocaleString()} warning(s)
-        // numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedErrors=${processedResults.numSuppressedErrors.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+        // numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenErrors=${processedResults.numHiddenErrors.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
         // debugLog("Here now in rendering bit!");
 
@@ -183,7 +183,7 @@ function BookPackagesCheck(/*username, languageCode, bookIDs,*/ props) {
       } else if (displayType === 'SevereMediumLow') {
         const processedResults = processNoticesToSevereMediumLow(rawCBPsResults, processOptions);
         //                 userLog(`BookPackagesCheck got processed results with ${processedResults.successList.length.toLocaleString()} success message(s), ${processedResults.errorList.length.toLocaleString()} error(s) and ${processedResults.warningList.length.toLocaleString()} warning(s)
-        //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedErrors=${processedResults.numSuppressedErrors.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+        //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenErrors=${processedResults.numHiddenErrors.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
         if (processedResults.severeList.length || processedResults.mediumList.length || processedResults.lowList.length)
           setResultValue(<>
@@ -199,18 +199,18 @@ function BookPackagesCheck(/*username, languageCode, bookIDs,*/ props) {
       } else if (displayType === 'SingleList') {
         const processedResults = processNoticesToSingleList(rawCBPsResults, processOptions);
         //       userLog(`BookPackagesCheck got processed results with ${processedResults.successList.length.toLocaleString()} success message(s) and ${processedResults.warningList.length.toLocaleString()} notice(s)
-        // numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+        // numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
         if (processedResults.warningList.length)
           setResultValue(<>
             <div>{renderSummary(processedResults)}
               {processedResults.numIgnoredNotices ? ` (but ${processedResults.numIgnoredNotices.toLocaleString()} ignored errors/warnings)` : ""}</div>
-            <RenderSuccessesWarningsGradient results={processedResults} />
+            <RenderSuccessesNoticesGradient results={processedResults} />
           </>);
         else // no warnings
           setResultValue(<>
             {renderSummary(processedResults)}
-            <RenderSuccessesWarningsGradient results={processedResults} />
+            <RenderSuccessesNoticesGradient results={processedResults} />
           </>);
       } else setResultValue(<b style={{ color: 'red' }}>Invalid displayType='{displayType}'</b>)
 

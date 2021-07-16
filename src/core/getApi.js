@@ -9,7 +9,7 @@ import { clearCheckedArticleCache } from './notes-links-check';
 import { functionLog, debugLog, userLog, parameterAssert, logicAssert } from './utilities';
 
 
-// const GETAPI_VERSION_STRING = '0.8.0';
+// const GETAPI_VERSION_STRING = '0.8.1';
 
 const MAX_INDIVIDUAL_FILES_TO_DOWNLOAD = 5; // More than this and it downloads the zipfile for the entire repo
 
@@ -483,7 +483,7 @@ export async function repositoryExistsOnDoor43({ username, repository }) {
   const desiredMatch = `${username}/${repository}`.toLowerCase();
   const filteredRepoList = retrievedRepoList.filter(repo => repo.full_name.toLowerCase() === desiredMatch);
   if (filteredRepoList.length < 1) {
-    userLog(`repositoryExistsOnDoor43(${username}, ${repository}) - repo not found`, retrievedRepoList.length, filteredRepoList.length);
+    userLog(`repositoryExistsOnDoor43(${username}, ${repository}) - repo not found ${retrievedRepoList.length} ${filteredRepoList.length}`);
     return false;
   }
   // const foundRepo = filteredRepoList[0];

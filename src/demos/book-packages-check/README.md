@@ -47,7 +47,7 @@ import BookPackagesCheck from './BookPackagesCheck';
   // Lines starting with // are ignored -- you can add or remove // as desired
   // Specifying maximumSimilarMessages and excerptLength is just to show off options
   // —those fields are not necessary (or normal) here
-  maximumSimilarMessages='8' // Default is 3 (0 means don’t suppress any)
+  //maximumSimilarMessages='8' // Default is 3 (0 means don’t suppress any)
   // excerptLength='25' // Default is 20 characters
   cutoffPriorityLevel='200' // Default is to detect all errors/warnings
   // sortBy='ByRepo' // Default is 'ByPriority'; also have 'ByRepo' and 'AsFound'

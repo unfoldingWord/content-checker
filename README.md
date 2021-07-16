@@ -58,7 +58,7 @@ However, the lower-level checking functions provide only the list of success mes
 
 There are two compulsory fields in all of these notice objects:
 
-1. `priority`: A notice priority number in the range 1-1000. Each different type of warning/error has a unique number (but not each instance of those warnings/errors). By default, notice priority numbers 700 and over are considered `errors` and 0-699 are considered `warnings`, but in truth, that’s rather arbitrary.
+1. `priority`: A notice priority number in the range 1-1,000. Each different type of warning/error has a unique number (but not each instance of those warnings/errors). By default, notice priority numbers 700 and over are considered `errors` and 0-699 are considered `warnings`, but in truth, that’s rather arbitrary.
 1. `message`: The actual general descriptive text of the notice
 
 All of the following fields may be missing or undefined, i.e., they’re all optional:

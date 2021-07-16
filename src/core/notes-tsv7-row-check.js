@@ -56,8 +56,8 @@ export async function checkNotesTSV7DataRow(languageCode, repoCode, line, bookID
     //parameterAssert(typeof languageCode === 'string', `checkNotesTSV7DataRow: 'languageCode' parameter should be a string not a '${typeof languageCode}'`);
     //parameterAssert(repoCode !== undefined, "checkNotesTSV7DataRow: 'repoCode' parameter should be defined");
     //parameterAssert(typeof repoCode === 'string', `checkNotesTSV7DataRow: 'repoCode' parameter should be a string not a '${typeof repoCode}'`);
-    // parameterAssert(REPO_CODES_LIST.includes(repoCode), `checkNotesTSV7DataRow: 'repoCode' parameter should not be '${repoCode}'`);
-    parameterAssert(repoCode==='TN2' || repoCode==='SN', `checkNotesTSV7DataRow: 'repoCode' parameter should be 'TN2' or 'SN', not '${repoCode}'`);
+    // //parameterAssert(REPO_CODES_LIST.includes(repoCode), `checkNotesTSV7DataRow: 'repoCode' parameter should not be '${repoCode}'`);
+    //parameterAssert(repoCode==='TN2' || repoCode==='SN', `checkNotesTSV7DataRow: 'repoCode' parameter should be 'TN2' or 'SN', not '${repoCode}'`);
     //parameterAssert(line !== undefined, "checkNotesTSV7DataRow: 'line' parameter should be defined");
     //parameterAssert(typeof line === 'string', `checkNotesTSV7DataRow: 'line' parameter should be a string not a '${typeof line}'`);
     //parameterAssert(bookID !== undefined, "checkNotesTSV7DataRow: 'bookID' parameter should be defined");

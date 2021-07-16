@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { clearCaches, clearCheckedArticleCache, ourParseInt, cachedGetFile, cachedFetchFileFromServerWithTag } from '../../core';
 import { processNoticesToErrorsWarnings, processNoticesToSevereMediumLow, processNoticesToSingleList } from '../notice-processing-functions';
-import { RenderSuccessesErrorsWarnings, RenderSuccessesSevereMediumLow, RenderSuccessesWarningsGradient, RenderElapsedTime } from '../RenderProcessedResults';
+import { RenderSuccessesErrorsWarnings, RenderSuccessesSevereMediumLow, RenderSuccessesNoticesGradient, RenderElapsedTime } from '../RenderProcessedResults';
 import { checkFileContents } from './checkFileContents';
 // eslint-disable-next-line no-unused-vars
 import { debugLog, userLog } from '../../core/utilities';
@@ -144,7 +144,7 @@ function FileCheck(props) {
       if (displayType === 'ErrorsWarnings') {
         const processedResults = processNoticesToErrorsWarnings(rawCFResults, processOptions);
         //                 userLog(`${`FileCheck got processed results with ${processedResults.successList.length.toLocaleString()} success message(s), ${processedResults.errorList.length.toLocaleString()} error(s) and ${processedResults.warningList.length.toLocaleString()} warning(s)`}
-        //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedErrors=${processedResults.numSuppressedErrors.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+        //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenErrors=${processedResults.numHiddenErrors.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
         if (processedResults.errorList.length || processedResults.warningList.length)
           setResultValue(<>
@@ -159,7 +159,7 @@ function FileCheck(props) {
       } else if (displayType === 'SevereMediumLow') {
         const processedResults = processNoticesToSevereMediumLow(rawCFResults, processOptions);
         //                 userLog(`FileCheck got processed results with ${processedResults.successList.length.toLocaleString()} success message(s), ${processedResults.errorList.length.toLocaleString()} error(s) and ${processedResults.warningList.length.toLocaleString()} warning(s)
-        //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedErrors=${processedResults.numSuppressedErrors.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+        //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenErrors=${processedResults.numHiddenErrors.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
         if (processedResults.severeList.length || processedResults.mediumList.length || processedResults.lowList.length)
           setResultValue(<>
@@ -174,17 +174,17 @@ function FileCheck(props) {
       } else if (displayType === 'SingleList') {
         const processedResults = processNoticesToSingleList(rawCFResults, processOptions);
         //       userLog(`FileCheck got processed results with ${processedResults.successList.length.toLocaleString()} success message(s) and ${processedResults.warningList.length.toLocaleString()} notice(s)
-        // numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+        // numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
         if (processedResults.warningList.length)
           setResultValue(<>
             {renderSummary(processedResults)}
-            <RenderSuccessesWarningsGradient results={processedResults} />
+            <RenderSuccessesNoticesGradient results={processedResults} />
           </>);
         else // no warnings
           setResultValue(<>
             {renderSummary(processedResults)}
-            <RenderSuccessesWarningsGradient results={processedResults} />
+            <RenderSuccessesNoticesGradient results={processedResults} />
           </>);
       } else setResultValue(<b style={{ color: 'red' }}>Invalid displayType='{displayType}'</b>)
     })(); // end of async part in unnamedFunction

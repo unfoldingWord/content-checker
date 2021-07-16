@@ -42,17 +42,43 @@ const tableIcons = {
 };
 
 
-// const RENDER_PROCESSED_RESULTS_VERSION = '0.6.7';
+// const RENDER_PROCESSED_RESULTS_VERSION = '0.7.0';
 
 
-export function RenderSuccesses({ username, results }) {
+/**
+ *
+ * @param {Object} param0 with username string and results object
+ * @returns a rendered list of files that have been checked
+ */
+export function RenderCheckedFilesList({ username, results }) {
+    // Also used in some of the lower-level demo results
     if (results?.checkedFileCount > 0)
         return (<p>&nbsp;&nbsp;&nbsp;&nbsp;Successfully checked {results.checkedFileCount.toLocaleString()} file{results.checkedFileCount === 1 ? '' : 's'} from {results.checkedRepoNames.length.toLocaleString()} <i>{username}</i> repo{results.checkedRepoNames.length === 1 ? '' : 's'}: {results.checkedRepoNames.join(', ')}
-            <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;including {results.checkedFilenameExtensions.length} file type{results.checkedFilenameExtensions.size === 1 ? '' : 's'}: {results.checkedFilenameExtensions.join(', ')}.</p>);
+            <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;including {results.checkedFilenameExtensions.length} file type{results.checkedFilenameExtensions.length === 1 ? '' : 's'}: {results.checkedFilenameExtensions.join(', ')}.</p>);
     else
         return (<p>&nbsp;&nbsp;&nbsp;&nbsp;No files checked!</p>);
 }
 
+/**
+ *
+ * @param {Object} param0 with elapsedSeconds
+ * @returns the elapsed time rendered appropriately for the human reader
+ */
+export function RenderElapsedTime({ elapsedSeconds }) {
+    const seconds = Math.round(elapsedSeconds % 60);
+    let remainingTime = Math.floor(elapsedSeconds / 60);
+    const minutes = Math.round(remainingTime % 60);
+    remainingTime = Math.floor(remainingTime / 60);
+    const hours = Math.round(remainingTime % 24);
+    remainingTime = Math.floor(remainingTime / 24);
+    //parameterAssert(remainingTime === 0, `Elapsed time also contains ${remainingTime} days`);
+    return <>{hours ? `${hours} hour` : ''}{hours && hours !== 1 ? 's' : ''}{hours ? ', ' : ''}{minutes ? `${minutes} minute` : ''}{minutes && minutes !== 1 ? 's' : ''}{minutes ? ', ' : ''}{seconds} second{seconds === 1 ? '' : 's'}</>;
+}
+/**
+ *
+ * @param {Object} param0 with rawNoticeListLength and results object
+ * @returns
+ */
 export function RenderTotals({ rawNoticeListLength, results }) {
     if (results?.numIgnoredNotices || results?.numDisabledNotices) {
         const netNumNotices = rawNoticeListLength - results.numIgnoredNotices - results.numDisabledNotices;
@@ -69,16 +95,26 @@ export function RenderTotals({ rawNoticeListLength, results }) {
             {results.checkedOptions.cutoffPriorityLevel ? ` Priority level ${results.checkedOptions.cutoffPriorityLevel} or lower were not included.` : ''}</p>);
 }
 
+function RenderSuppressedCount({suppressedCount}) {
+    if (suppressedCount === 0)
+    return null;
+    // else
+    // debugLog(`Have ${suppressedCount.toLocaleString()} suppressed notices`);
+    return <>
+    <p><small style={{ color: 'Gray' }}>{suppressedCount ? suppressedCount.toLocaleString() + " excess notice" + (suppressedCount === 1 ? '' : 's') + " suppressed." : ''}</small></p>
+    </>;
+}
+
 /**
  * @description - Displays a given piece of text (which can include newline characters)
- * @param {string} text - text to render as numbered lines
+ * @param {Object} param0 with text - text to render as numbered lines
  * @return {String} - rendered HTML for the numbered list of lines
  */
 export function RenderNumberedLines({ text }) {
     // This function is only used in some of the demos
     return <ol>
         {text.split('\n').map(function (line, index) {
-            return <li key={index}>{line}</li>;
+            return <li key={'RNL' + index}>{line}</li>;
         })}
     </ol>;
 }
@@ -102,7 +138,7 @@ export function RenderObject({ thisObject, excludeList }) {
                     if (Array.isArray(displayObject) && displayObject.length > MAX_ARRAY_ITEMS_TO_DISPLAY)
                         displayObject = `(only first ${MAX_ARRAY_ITEMS_TO_DISPLAY} displayed here) ${JSON.stringify(displayObject.slice(0, MAX_ARRAY_ITEMS_TO_DISPLAY))}, etc…`;
                     return (
-                        <li key={keyIndex}>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <li key={'RO' + keyIndex}>&nbsp;&nbsp;&nbsp;&nbsp;
                             <span><b>{key}</b>{Array.isArray(thisObject[key]) ? ` (${thisObject[key].length.toLocaleString()}) ` : ''}: {typeof displayObject === 'object' ? JSON.stringify(displayObject) : displayObject}</span>
                         </li>
                     )
@@ -208,6 +244,31 @@ export function RenderRawResults({ results }) {
 }
 
 
+function RenderSuccessesColored({ results }) {
+    // Display our array of success message strings in a nicer format
+    //
+    // Expects results to contain:
+    //      1/ successList
+    // debugLog("In RenderSuccessesColored with ", successList);
+    // consoleLogObject('RenderSuccessesColored results', results);
+
+    let haveWarnings;
+    try { haveWarnings = results.errorList.length || results.warningList.length; }
+    catch (e1) {
+        try { haveWarnings = results.severeList.length || results.mediumList.length || results.lowList.length; }
+        catch (e2) { haveWarnings = results.warningList.length; }
+    }
+
+    return <ul>
+        {results.successList.map(function (listEntry, index) {
+            return <li key={'RSC' + index}>
+                <b style={{ color: haveWarnings ? 'limegreen' : 'green' }}>{listEntry}</b>
+            </li>;
+        })}
+    </ul>;
+}
+
+
 /**
 * @description - Displays the message plus details if specified
 * @param {string} color - color field for the message style
@@ -218,14 +279,12 @@ export function RenderRawResults({ results }) {
 function RenderMessage({ color, message, details }) {
     let detailsString = '';
     if (details)
-        if (details.startsWith('verse text ►'))
-            detailsString = <> with verse text ►<span style={{ backgroundColor: 'LemonChiffon' }}>{details.slice(12, -1)}</span>◄</>;
+        if (details.startsWith('verse text ◗'))
+            detailsString = <> with verse text ◗<span style={{ backgroundColor: 'LemonChiffon' }}>{details.slice(12, -1)}</span>◖</>;
         else if (details.length)
             detailsString = <> with '{details}'</>;
     return <><b style={{ color: color }}>{message}</b>{detailsString}</>;
 }
-
-
 /**
 * @description - Displays the bookcode and chapter/verse details if specified
 * @param {string} bookID - (optional) 3-character UPPERCASE USFM bookcode or 'OBS'.
@@ -246,8 +305,6 @@ function RenderBCV({ bookID, C, V }) {
         return <> {V && V.length ? 'at' : 'in'} <b>{result}</b></>;
     return null;
 }
-
-
 /**
 * @description - Displays the repoName and filename/lineNumber details if specified
 * @param {string} username - (optional) username/orgName string
@@ -321,7 +378,6 @@ function RenderFileDetails({ givenEntry }) {
 }
 // end of RenderFileDetails
 
-
 function RenderExcerpt({ excerpt, message }) {
     // debugLog(`RenderExcerpt(${excerpt}, ${message})`);
     // NOTE: These message strings must match notes-links-check.js (priority 82, and priority 32,)
@@ -337,39 +393,15 @@ function RenderExcerpt({ excerpt, message }) {
             const linkPart = excerpt.substring(ix + 2, excerpt.length - 1); // Step past the ]( but don't include the final )
             const adjLinkPart = message === "Should http link be https" ? linkPart.replace('http:', 'https:') : linkPart;
             // debugLog(`RenderExcerpt from '${excerpt}' got ix=${ix}, displayPart='${displayPart}', linkPart='${linkPart}', adjLinkPart='${adjLinkPart}'`);
-            return <><span style={{ color: 'DimGray' }}>` around ►[{displayPart}](<a rel="noopener noreferrer" target="_blank" href={adjLinkPart}>{linkPart}</a>)◄`</span></>
+            return <><span style={{ color: 'DimGray' }}>` around ◗[{displayPart}](<a rel="noopener noreferrer" target="_blank" href={adjLinkPart}>{linkPart}</a>)◖`</span></>
         }
     }
     if (excerpt && excerpt.length)
-        return <> around ►<span style={{ color: 'DarkOrange' }}><b>{excerpt}</b></span>◄</>;
+        return <> around ◗<span style={{ color: 'DarkOrange' }}><b>{excerpt}</b></span>◖</>;
     // else
     return null;
 }
 // end of RenderExcerpt
-
-function RenderSuccessesColored({ results }) {
-    // Display our array of success message strings in a nicer format
-    //
-    // Expects results to contain:
-    //      1/ successList
-    // debugLog("In RenderSuccessesColored with ", successList);
-    // consoleLogObject('RenderSuccessesColored results', results);
-
-    let haveWarnings;
-    try { haveWarnings = results.errorList.length || results.warningList.length; }
-    catch (e1) {
-        try { haveWarnings = results.severeList.length || results.mediumList.length || results.lowList.length; }
-        catch (e2) { haveWarnings = results.warningList.length; }
-    }
-
-    return <ul>
-        {results.successList.map(function (listEntry, index) {
-            return <li key={index}>
-                <b style={{ color: haveWarnings ? 'limegreen' : 'green' }}>{listEntry}</b>
-            </li>;
-        })}
-    </ul>;
-}
 
 /**
  *
@@ -378,10 +410,39 @@ function RenderSuccessesColored({ results }) {
 function RenderPriority({ entry }) {
     // Also displays the debugChain (after the priority) if the debugChain string exists
     if (entry.debugChain)
-        return <small><span style={{ color: 'Gray' }}> ({entry.priority >= 0 ? "Priority " + entry.priority : ""})</span> <span style={{ color: 'Purple' }}>[{entry.debugChain}]</span></small>
+        return <small><span style={{ color: 'Gray' }}> ({"Priority " + entry.priority})</span> <span style={{ color: 'Purple' }}>[{entry.debugChain}]</span></small>
     else
-        return <small style={{ color: 'Gray' }}> ({entry.priority >= 0 ? "Priority " + entry.priority : ""})</small>
+        return <small style={{ color: 'Gray' }}> ({"Priority " + entry.priority})</small>
 }
+
+/**
+ *
+ * @param {Object} param0
+ * @returns JSX rendered entry
+ */
+function RenderOneEntry({ color, entry }) {
+    return <>
+        <RenderMessage color={color} message={entry.message} details={entry.details} />
+        <RenderBCV bookID={entry.bookID} C={entry.C} V={entry.V} />
+        <RenderFileDetails givenEntry={entry} />
+        {entry.characterIndex > 0 ? " (at character " + (entry.characterIndex + 1) + ")" : ""}
+        <RenderExcerpt excerpt={entry.excerpt} message={entry.message} />
+        {entry.location}
+        <RenderPriority entry={entry} /></>;
+}
+
+
+function RenderHiddenNotices({ color, suppressedNoticeList }) {
+    return <ul>
+        {suppressedNoticeList.map(function (suppressedEntry, index) {
+            // debugLog(`RenderHiddenNotices ${index} ${JSON.stringify(suppressedEntry)}`);
+            return <li key={'RHN' + index}>
+                <RenderOneEntry color={color} entry={suppressedEntry} />
+            </li>;
+        })}
+    </ul>;
+}
+
 
 /**
  *
@@ -404,105 +465,40 @@ function RenderProcessedArray({ arrayType, results }) {
         </>;
     else { // not 's' (successList)
         const myList = arrayType === 'e' ? results.errorList : results.warningList;
+        const thisColor = arrayType === 'e' ? 'red' : 'orange';
         return <ul>
             {myList.map(function (listEntry, index) {
-                return <li key={index}>
-                    <RenderMessage color={arrayType === 'e' ? 'red' : 'orange'} message={listEntry.message} details={listEntry.details} />
-                    <RenderBCV bookID={listEntry.bookID} C={listEntry.C} V={listEntry.V} />
-                    <RenderFileDetails givenEntry={listEntry} />
-                    {listEntry.characterIndex > 0 ? " (at character " + (listEntry.characterIndex + 1) + ")" : ""}
-                    <RenderExcerpt excerpt={listEntry.excerpt} message={listEntry.message} />
-                    {listEntry.location}
-                    <RenderPriority entry={listEntry} />
+                if (listEntry.location.indexOf(' HIDDEN') >= 0 && listEntry.hiddenNotices)
+                    // This is a "MORE SIMILAR ERRORS/WARNINGS/NOTICES SUPRESSED" message with other notices embedded
+                    //  so we allow it to be expanded using HTML5 "details" feature.
+                    return <li key={'RPA' + index}><details>
+                        <summary><RenderOneEntry color={thisColor} entry={listEntry} /></summary>
+                        <RenderHiddenNotices color={thisColor} suppressedNoticeList={listEntry.hiddenNotices} /></details></li>;
+                // else (a regular message)
+                return <li key={'RPA' + index}>
+                    <RenderOneEntry color={thisColor} entry={listEntry} />
                 </li>;
             })}
         </ul>;
     }
 }
-
-
-function RenderGivenArray({ array, color }) {
-    // Display our array of objects in a nicer format
-    //  priority (integer), message (string),
-    //  plus possible optional fields:
-    //      bookID, C, V,
-    //      repoName, filename, lineNumber,
-    //      characterIndex (integer), excerpt (string), location (descriptive string)
-    //
-    // debugLog("In RenderGivenArray with ", arrayType);
-    // consoleLogObject('RenderGivenArray results', results);
-
-    return <ul>
-        {array.map(function (listEntry, index) {
-            return <li key={index}>
-                <RenderMessage color={color} message={listEntry.message} details={listEntry.details} />
-                <RenderBCV bookID={listEntry.bookID} C={listEntry.C} V={listEntry.V} />
-                <RenderFileDetails givenEntry={listEntry} />
-                {listEntry.characterIndex !== undefined && listEntry.characterIndex >= 0 ? " (at character " + (listEntry.characterIndex + 1) + " of line)" : ""}
-                <RenderExcerpt excerpt={listEntry.excerpt} message={listEntry.message} />
-                {listEntry.location}
-                <RenderPriority entry={listEntry} />
-            </li>;
-        })}
-    </ul>;
-}
-
-
-function getGradientcolor(priorityValue) {
-    // priorityValue is in range 1..999
-    //
-    // Returns a color value from red (highest priority) to orange (lower)
-    const red = `0${Math.floor(priorityValue * 255 / 999).toString(16)}`.slice(-2);
-    // const green = `0${Math.floor((1000-priorityValue) * 55 / 999).toString(16)}`.slice(-2);
-    // debugLog(`getGradientcolor(${priorityValue}) -> red='${red}' green='${green}'`)
-    return `#${red}0000`; // or `#${red}${green}00`
-}
-
-
-function RenderWarningsGradient({ results }) {
-    // Display our array of 8-part lists in a nicer format
-    //  1/ priority number, 2/ bookID, 3/ C, 4/ V, 5/ message,
-    //      6/ index (integer), 7/ excerpt (optional), 8/ location
-    //
-    // Expects results to contain:
-    //      1/ warningList
-    // debugLog("In RenderWarningsGradient with ", results.warningList);
-    // consoleLogObject('RenderWarningsGradient results', results);
-
-    return <ul>
-        {results.warningList.map(function (listEntry, index) {
-            const thiscolor = getGradientcolor(listEntry.priority);
-            return <li key={index}>
-                <RenderMessage color={thiscolor} message={listEntry.message} details={listEntry.details} />
-                <RenderBCV bookID={listEntry.bookID} C={listEntry.C} V={listEntry.V} />
-                <RenderFileDetails givenEntry={listEntry} />
-                {listEntry.characterIndex !== undefined && listEntry.characterIndex >= 0 ? " (at character " + (listEntry.characterIndex + 1) + " of line)" : ""}
-                <RenderExcerpt excerpt={listEntry.excerpt} message={listEntry.message} />
-                {listEntry.location}
-                <RenderPriority entry={listEntry} />
-            </li>;
-        })}
-    </ul>;
-}
-
-
 function RenderErrors({ results }) {
     // debugLog("In RenderErrors");
     // consoleLogObject('RenderErrors results', results);
-    userLog(`Displaying ${results.errorList.length.toLocaleString()} error(s) with ${results.numSuppressedErrors.toLocaleString()} suppressed`);
+    userLog(`Displaying ${results.errorList.length.toLocaleString()} error(s) with ${results.numHiddenErrors.toLocaleString()} hidden`);
     return <>
         <b style={{ color: results.errorList.length ? 'red' : 'green' }}>{results.errorList.length.toLocaleString()} error{results.errorList.length === 1 ? '' : 's'}</b>{results.errorList.length ? ':' : ''}
-        <small style={{ color: 'Gray' }}>{results.numSuppressedErrors ? " (" + results.numSuppressedErrors.toLocaleString() + " similar one" + (results.numSuppressedErrors === 1 ? '' : 's') + " suppressed)" : ''}</small>
+        <small style={{ color: 'Gray' }}>{results.numHiddenErrors ? " (" + results.numHiddenErrors.toLocaleString() + " similar one" + (results.numHiddenErrors === 1 ? '' : 's') + " hidden)" : ''}</small>
         <RenderProcessedArray results={results} arrayType='e' />
     </>;
 }
 function RenderWarnings({ results }) {
     // debugLog("In RenderWarnings");
     // consoleLogObject('RenderWarnings results', results);
-    userLog(`Displaying ${results.warningList.length.toLocaleString()} warnings(s) with ${results.numSuppressedWarnings.toLocaleString()} suppressed`);
+    userLog(`Displaying ${results.warningList.length.toLocaleString()} warnings(s) with ${results.numHiddenWarnings.toLocaleString()} hidden`);
     return <>
         <b style={{ color: results.warningList.length ? 'orange' : 'green' }}>{results.warningList.length.toLocaleString()} warning{results.warningList.length === 1 ? '' : 's'}</b>{results.warningList.length ? ':' : ''}
-        <small style={{ color: 'Gray' }}>{results.numSuppressedWarnings ? " (" + results.numSuppressedWarnings.toLocaleString() + " similar one" + (results.numSuppressedWarnings === 1 ? '' : 's') + " suppressed)" : ''}</small>
+        <small style={{ color: 'Gray' }}>{results.numHiddenWarnings ? " (" + results.numHiddenWarnings.toLocaleString() + " similar one" + (results.numHiddenWarnings === 1 ? '' : 's') + " hidden)" : ''}</small>
         <RenderProcessedArray results={results} arrayType='w' />
     </>;
 }
@@ -510,54 +506,14 @@ function RenderErrorsAndWarnings({ results }) {
     // debugLog("In RenderErrorsAndWarnings");
     // consoleLogObject('RenderErrorsAndWarnings results', results);
     return <>
+        <small style={{ color: 'Gray' }}>{results.numSuppressedNotices ? " (" + results.numSuppressedNotices.toLocaleString() + " similar one" + (results.numSuppressedNotices === 1 ? '' : 's') + " suppressed)" : ''}</small>
         <RenderErrors results={results} />
         <RenderWarnings results={results} />
     </>;
 }
-
-
-function RenderSevere({ results }) {
-    // debugLog("In RenderSevere");
-    // consoleLogObject('RenderSevere results', results);
-    userLog(`Displaying ${results.severeList.length.toLocaleString()} severe notice(s) with ${results.numSevereSuppressed.toLocaleString()} suppressed`);
-    return <>
-        <b style={{ color: results.severeList.length ? 'red' : 'green' }}>{results.severeList.length.toLocaleString()} severe error{results.severeList.length === 1 ? '' : 's'}</b>{results.severeList.length ? ':' : ''}
-        <small style={{ color: 'Gray' }}>{results.numSevereSuppressed ? " (" + results.numSevereSuppressed.toLocaleString() + " similar one" + (results.numSevereSuppressed === 1 ? '' : 's') + " suppressed)" : ''}</small>
-        <RenderGivenArray array={results.severeList} color='red' />
-    </>;
-}
-function RenderMedium({ results }) {
-    // debugLog("In RenderSevere");
-    // consoleLogObject('RenderSevere results', results);
-    userLog(`Displaying ${results.mediumList.length.toLocaleString()} medium notice(s) with ${results.numMediumSuppressed.toLocaleString()} suppressed`);
-    return <>
-        <b style={{ color: results.mediumList.length ? 'maroon' : 'green' }}>{results.mediumList.length.toLocaleString()} medium error{results.mediumList.length === 1 ? '' : 's'}</b>{results.mediumList.length ? ':' : ''}
-        <small style={{ color: 'Gray' }}>{results.numMediumSuppressed ? " (" + results.numMediumSuppressed.toLocaleString() + " similar one" + (results.numMediumSuppressed === 1 ? '' : 's') + " suppressed)" : ''}</small>
-        <RenderGivenArray array={results.mediumList} color='maroon' />
-    </>;
-}
-function RenderLow({ results }) {
-    // debugLog("In RenderLow");
-    // consoleLogObject('RenderLow results', results);
-    userLog(`Displaying ${results.lowList.length.toLocaleString()} low notice(s) with ${results.numLowSuppressed.toLocaleString()} suppressed`);
-    return <>
-        <b style={{ color: results.lowList.length ? 'orange' : 'green' }}>{results.lowList.length.toLocaleString()} other warning{results.lowList.length === 1 ? '' : 's'}</b>{results.lowList.length ? ':' : ''}
-        <small style={{ color: 'Gray' }}>{results.numLowSuppressed ? " (" + results.numLowSuppressed.toLocaleString() + " similar one" + (results.numLowSuppressed === 1 ? '' : 's') + " suppressed)" : ''}</small>
-        <RenderGivenArray array={results.lowList} color='orange' />
-    </>;
-}
-function RenderSevereMediumLow({ results }) {
-    // debugLog("In RenderSevereMediumLow");
-    // consoleLogObject('RenderSevereMediumLow results', results);
-    return <>
-        <RenderSevere results={results} />
-        <RenderMedium results={results} />
-        <RenderLow results={results} />
-    </>;
-}
-
-
 export function RenderSuccessesErrorsWarnings({ results }) {
+    // Not used internally here -- called from Demo check functions
+
     // debugLog("In RenderSuccessesErrorsWarnings");
 
     // consoleLogObject('RenderSuccessesErrorsWarnings results', results);
@@ -580,7 +536,78 @@ export function RenderSuccessesErrorsWarnings({ results }) {
 }
 
 
+function RenderGivenArray({ color, array }) {
+    // Display our array of objects in a nicer format
+    //  priority (integer), message (string),
+    //  plus possible optional fields:
+    //      bookID, C, V,
+    //      repoName, filename, lineNumber,
+    //      characterIndex (integer), excerpt (string), location (descriptive string)
+    //
+    // Called from RenderSevere, RenderMedium, RenderLow
+    //
+    // debugLog("In RenderGivenArray with ", arrayType);
+    // consoleLogObject('RenderGivenArray results', results);
+
+    return <ul>
+        {array.map(function (listEntry, index) {
+            debugLog(`RenderGivenArray ${index} ${JSON.stringify(listEntry)}`);
+            if (listEntry.location.indexOf(' HIDDEN') >= 0 && listEntry.hiddenNotices)
+                // This is a "MORE SIMILAR ERRORS/WARNINGS/NOTICES SUPRESSED" message with other notices embedded
+                //  so we allow it to be expanded using HTML5 "details" feature.
+                return <li key={'RGA' + index}><details>
+                    <summary><RenderOneEntry color={color} entry={listEntry} /></summary>
+                    <RenderHiddenNotices color={color} suppressedNoticeList={listEntry.hiddenNotices} /></details></li>;
+            // else (a regular message)
+            return <li key={'RGA' + index}>
+                <RenderOneEntry color={color} entry={listEntry} />
+            </li>;
+        })}
+    </ul>;
+}
+function RenderSevere({ results }) {
+    // debugLog("In RenderSevere");
+    // consoleLogObject('RenderSevere results', results);
+    userLog(`Displaying ${results.severeList.length.toLocaleString()} severe notice(s) with ${results.numHiddenSevere.toLocaleString()} hidden`);
+    return <>
+        <b style={{ color: results.severeList.length ? 'red' : 'green' }}>{results.severeList.length.toLocaleString()} severe error{results.severeList.length === 1 ? '' : 's'}</b>{results.severeList.length ? ':' : ''}
+        <small style={{ color: 'Gray' }}>{results.numHiddenSevere ? " (" + results.numHiddenSevere.toLocaleString() + " similar one" + (results.numHiddenSevere === 1 ? '' : 's') + " hidden)" : ''}</small>
+        <RenderGivenArray color='red' array={results.severeList} />
+    </>;
+}
+function RenderMedium({ results }) {
+    // debugLog("In RenderSevere");
+    // consoleLogObject('RenderSevere results', results);
+    userLog(`Displaying ${results.mediumList.length.toLocaleString()} medium notice(s) with ${results.numHiddenMedium.toLocaleString()} hidden`);
+    return <>
+        <b style={{ color: results.mediumList.length ? 'maroon' : 'green' }}>{results.mediumList.length.toLocaleString()} medium error{results.mediumList.length === 1 ? '' : 's'}</b>{results.mediumList.length ? ':' : ''}
+        <small style={{ color: 'Gray' }}>{results.numHiddenMedium ? " (" + results.numHiddenMedium.toLocaleString() + " similar one" + (results.numHiddenMedium === 1 ? '' : 's') + " hidden)" : ''}</small>
+        <RenderGivenArray color='maroon' array={results.mediumList} />
+    </>;
+}
+function RenderLow({ results }) {
+    // debugLog("In RenderLow");
+    // consoleLogObject('RenderLow results', results);
+    userLog(`Displaying ${results.lowList.length.toLocaleString()} low notice(s) with ${results.numHiddenLow.toLocaleString()} hidden`);
+    return <>
+        <b style={{ color: results.lowList.length ? 'orange' : 'green' }}>{results.lowList.length.toLocaleString()} other warning{results.lowList.length === 1 ? '' : 's'}</b>{results.lowList.length ? ':' : ''}
+        <small style={{ color: 'Gray' }}>{results.numHiddenLow ? " (" + results.numHiddenLow.toLocaleString() + " similar one" + (results.numHiddenLow === 1 ? '' : 's') + " hidden)" : ''}</small>
+        <RenderGivenArray color='orange' array={results.lowList} />
+    </>;
+}
+function RenderSevereMediumLow({ results }) {
+    // debugLog("In RenderSevereMediumLow");
+    // consoleLogObject('RenderSevereMediumLow results', results);
+    return <>
+        <small style={{ color: 'Gray' }}>{results.numSuppressedNotices ? " (" + results.numSuppressedNotices.toLocaleString() + " similar one" + (results.numSuppressedNotices === 1 ? '' : 's') + " suppressed)" : ''}</small>
+        <RenderSevere results={results} />
+        <RenderMedium results={results} />
+        <RenderLow results={results} />
+    </>;
+}
 export function RenderSuccessesSevereMediumLow({ results }) {
+    // Not used internally here -- called from Demo check functions
+
     // debugLog("In RenderSuccessesSevereMediumLow");
 
     // consoleLogObject('RenderSuccessesSevereMediumLow results', results);
@@ -602,10 +629,52 @@ export function RenderSuccessesSevereMediumLow({ results }) {
     </>;
 }
 
-export function RenderSuccessesWarningsGradient({ results }) {
-    // debugLog("In RenderSuccessesWarningsGradient");
 
-    // consoleLogObject('RenderSuccessesWarningsGradient results', results);
+function getGradientcolor(priorityValue) {
+    // priorityValue is in range 1..999
+    //
+    // Returns a color value from red (highest priority) to orange (lower)
+    const red = `0${Math.floor(priorityValue * 255 / 999).toString(16)}`.slice(-2);
+    // const green = `0${Math.floor((1000-priorityValue) * 55 / 999).toString(16)}`.slice(-2);
+    // debugLog(`getGradientcolor(${priorityValue}) -> red='${red}' green='${green}'`)
+    return `#${red}0000`; // or `#${red}${green}00`
+}
+function RenderNoticesGradient({ results }) {
+    // Display our array of 8-part lists in a nicer format
+    //  1/ priority number, 2/ bookID, 3/ C, 4/ V, 5/ message,
+    //      6/ index (integer), 7/ excerpt (optional), 8/ location
+    //
+    // Expects results to contain:
+    //      1/ warningList
+    //
+    // Called from RenderSuccessesNoticesGradient below
+    //
+    // debugLog("In RenderNoticesGradient with ", results.warningList);
+    // consoleLogObject('RenderNoticesGradient results', results);
+
+    return <ul>
+        {results.warningList.map(function (listEntry, index) {
+            // debugLog(`RenderNoticesGradient ${index} ${JSON.stringify(listEntry)}`);
+            const thisColor = getGradientcolor(listEntry.priority);
+            if (listEntry.location.indexOf(' HIDDEN') >= 0 && listEntry.hiddenNotices)
+                // This is a "MORE SIMILAR ERRORS/WARNINGS/NOTICES SUPRESSED" message with other notices embedded
+                //  so we allow it to be expanded using HTML5 "details" feature.
+                return <li key={'RWG' + index}><details>
+                    <summary><RenderOneEntry color={thisColor} entry={listEntry} /></summary>
+                    <RenderHiddenNotices color={thisColor} suppressedNoticeList={listEntry.hiddenNotices} /></details></li>;
+            // else (a regular message)
+            return <li key={'RWG' + index}>
+                <RenderOneEntry color={thisColor} entry={listEntry} />
+            </li>;
+        })}
+    </ul>;
+}
+export function RenderSuccessesNoticesGradient({ results }) {
+    // Not used internally here -- called from Demo check functions
+
+    // debugLog("In RenderSuccessesNoticesGradient");
+
+    // consoleLogObject('RenderSuccessesNoticesGradient results', results);
 
     let successCount;
     if (results.successList.length === 1) successCount = 'One';
@@ -615,24 +684,13 @@ export function RenderSuccessesWarningsGradient({ results }) {
     else if (results.successList.length === 5) successCount = 'Five';
     else successCount = results.successList.length.toLocaleString();
 
-    userLog(`Displaying ${results.warningList.length.toLocaleString()} gradient notice(s) with ${results.numSuppressedWarnings.toLocaleString()} suppressed`);
+    userLog(`Displaying ${results.warningList.length.toLocaleString()} gradient notice(s) with ${results.numHiddenNotices.toLocaleString()} hidden`);
     return <>
         <b style={{ color: results.warningList.length ? 'limegreen' : 'green' }}>{successCount.toLocaleString()} check{results.successList.length === 1 ? '' : 's'} completed</b>{results.successList.length ? ':' : ''}
         <RenderSuccessesColored results={results} />
+        <RenderSuppressedCount suppressedCount={results.numSuppressedNotices} />
         <b style={{ color: results.warningList.length ? 'orange' : 'green' }}>{results.warningList.length.toLocaleString()} warning notice{results.warningList.length === 1 ? '' : 's'}</b>{results.warningList.length ? ':' : ''}
-        <small style={{ color: 'Gray' }}>{results.numSuppressedWarnings ? " (" + results.numSuppressedWarnings.toLocaleString() + " similar one" + (results.numSuppressedWarnings === 1 ? '' : 's') + " suppressed)" : ''}</small>
-        {results.warningList.length ? <RenderWarningsGradient results={results} /> : ""}
+        <small style={{ color: 'Gray' }}>{results.numHiddenNotices ? " (" + results.numHiddenNotices.toLocaleString() + " similar one" + (results.numHiddenNotices === 1 ? '' : 's') + " hidden)" : ''}</small>
+        {results.warningList.length ? <RenderNoticesGradient results={results} /> : ""}
     </>;
-}
-
-
-export function RenderElapsedTime({ elapsedSeconds }) {
-    const seconds = Math.round(elapsedSeconds % 60);
-    let remainingTime = Math.floor(elapsedSeconds / 60);
-    const minutes = Math.round(remainingTime % 60);
-    remainingTime = Math.floor(remainingTime / 60);
-    const hours = Math.round(remainingTime % 24);
-    remainingTime = Math.floor(remainingTime / 24);
-    //parameterAssert(remainingTime === 0, `Elapsed time also contains ${remainingTime} days`);
-    return <>{hours ? `${hours} hour` : ''}{hours && hours !== 1 ? 's' : ''}{hours ? ', ' : ''}{minutes ? `${minutes} minute` : ''}{minutes && minutes !== 1 ? 's' : ''}{minutes ? ', ' : ''}{seconds} second{seconds === 1 ? '' : 's'}</>;
 }

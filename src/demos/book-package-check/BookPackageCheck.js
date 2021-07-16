@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as books from '../../core/books/books';
 import { clearCaches, clearCheckedArticleCache, ourParseInt, preloadReposIfNecessary } from '../../core';
 import { processNoticesToErrorsWarnings, processNoticesToSevereMediumLow, processNoticesToSingleList } from '../notice-processing-functions';
-import { RenderSuccesses, RenderSuccessesErrorsWarnings, RenderSuccessesSevereMediumLow, RenderSuccessesWarningsGradient, RenderTotals } from '../RenderProcessedResults';
+import { RenderCheckedFilesList, RenderSuccessesErrorsWarnings, RenderSuccessesSevereMediumLow, RenderSuccessesNoticesGradient, RenderTotals } from '../RenderProcessedResults';
 import { checkBookPackage } from './checkBookPackage';
 // eslint-disable-next-line no-unused-vars
 import { userLog, debugLog, parameterAssert, logicAssert } from '../../core/utilities';
@@ -160,7 +160,7 @@ function BookPackageCheck(/*username, languageCode, bookID,*/ props) {
             function renderSummary(processedResults) {
                 return (<div>
                     <p>Checked <b>{username} {languageCode} {bookID}</b> (from <i>{branch === undefined ? 'DEFAULT' : branch}</i> branches)</p>
-                    <RenderSuccesses username={username} results={processedResults} />
+                    <RenderCheckedFilesList username={username} results={processedResults} />
                     <RenderTotals rawNoticeListLength={rawCBPResults.noticeList.length} results={processedResults} />
                     {/* <RenderRawResults results={rawCBPResults} /> */}
                 </div>);
@@ -169,7 +169,7 @@ function BookPackageCheck(/*username, languageCode, bookID,*/ props) {
             if (displayType === 'ErrorsWarnings') {
                 const processedResults = processNoticesToErrorsWarnings(rawCBPResults, processOptions);
                 //             userLog(`BookPackageCheck got back processedResults with ${processedResults.successList.length.toLocaleString()} success message(s), ${processedResults.errorList.length.toLocaleString()} error(s) and ${processedResults.warningList.length.toLocaleString()} warning(s)
-                //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedErrors=${processedResults.numSuppressedErrors.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+                //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenErrors=${processedResults.numHiddenErrors.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
                 // debugLog("Here now in rendering bit!");
 
@@ -186,7 +186,7 @@ function BookPackageCheck(/*username, languageCode, bookID,*/ props) {
             } else if (displayType === 'SevereMediumLow') {
                 const processedResults = processNoticesToSevereMediumLow(rawCBPResults, processOptions);
                 //             userLog(`BookPackageCheck got back processedResults with ${processedResults.successList.length.toLocaleString()} success message(s), ${processedResults.errorList.length.toLocaleString()} error(s) and ${processedResults.warningList.length.toLocaleString()} warning(s)
-                //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedErrors=${processedResults.numSuppressedErrors.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+                //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenErrors=${processedResults.numHiddenErrors.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
                 if (processedResults.severeList.length || processedResults.mediumList.length || processedResults.lowList.length)
                     setResultValue(<>
@@ -201,17 +201,17 @@ function BookPackageCheck(/*username, languageCode, bookID,*/ props) {
             } else if (displayType === 'SingleList') {
                 const processedResults = processNoticesToSingleList(rawCBPResults, processOptions);
                 // debugLog(`BookPackageCheck got back processedResults with ${processedResults.successList.length.toLocaleString()} success message(s) and ${processedResults.warningList.length.toLocaleString()} notice(s)
-                //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numSuppressedWarnings=${processedResults.numSuppressedWarnings.toLocaleString()}`);
+                //   numIgnoredNotices=${processedResults.numIgnoredNotices.toLocaleString()} numHiddenWarnings=${processedResults.numHiddenWarnings.toLocaleString()}`);
 
                 if (processedResults.warningList.length)
                     setResultValue(<>
                         {renderSummary(processedResults)}
-                        <RenderSuccessesWarningsGradient results={processedResults} />
+                        <RenderSuccessesNoticesGradient results={processedResults} />
                     </>);
                 else // no warnings
                     setResultValue(<>
                         {renderSummary(processedResults)}
-                        <RenderSuccessesWarningsGradient results={processedResults} />
+                        <RenderSuccessesNoticesGradient results={processedResults} />
                     </>);
             } else setResultValue(<b style={{ color: 'red' }}>Invalid displayType='{displayType}'</b>)
 
